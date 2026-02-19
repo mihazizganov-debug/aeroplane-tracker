@@ -5,6 +5,7 @@
 
 from src.api.aeroplanes_api import AeroplanesAPI
 from src.models.aeroplane import Aeroplane
+from src.storage.json_storage import JSONStorage
 
 
 def print_menu():
@@ -16,7 +17,11 @@ def print_menu():
     print("2. Показать топ N самолетов по высоте")
     print("3. Показать самолеты по стране регистрации")
     print("4. Сравнить два самолета")
-    print("5. Выход")
+    print("5. Сохранить текущие самолеты в файл")
+    print("6. Загрузить самолеты из файла")
+    print("7. Показать сохраненные самолеты")
+    print("8. Очистить файл")
+    print("9. Выход")
     print("-" * 60)
 
 
@@ -138,6 +143,97 @@ def compare_two_planes(planes):
         print(f"⚠️ Ошибка: {e}")
 
 
+def save_to_file(planes):
+    """Сохранение текущих самолетов в JSON-файл."""
+    if not planes:
+        print("\n⚠️ Нет самолетов для сохранения")
+        return
+
+    storage = JSONStorage("data/aeroplanes.json")
+
+    # Преобразуем объекты Aeroplane в словари
+    planes_dict = [plane.to_dict() for plane in planes]
+
+    added, skipped = storage.add_many(planes_dict)
+
+    print(f"\n💾 Результат сохранения:")
+    print(f"   ✅ Добавлено: {added}")
+    print(f"   ⏭️  Пропущено (дубликаты): {skipped}")
+    print(f"   📊 Всего в файле: {len(storage)}")
+
+
+def load_from_file():
+    """Загрузка самолетов из JSON-файла."""
+    storage = JSONStorage("data/aeroplanes.json")
+
+    planes_dict = storage.get_all()
+
+    if not planes_dict:
+        print("\n📂 Файл пуст")
+        return []
+
+    # Преобразуем словари в объекты Aeroplane
+    planes = []
+    for p_dict in planes_dict:
+        try:
+            plane = Aeroplane(
+                icao24=p_dict.get('icao24', ''),
+                callsign=p_dict.get('callsign'),
+                origin_country=p_dict.get('origin_country', ''),
+                altitude=p_dict.get('altitude'),
+                speed=p_dict.get('speed'),
+                longitude=p_dict.get('longitude'),
+                latitude=p_dict.get('latitude'),
+                on_ground=p_dict.get('on_ground', False)
+            )
+            planes.append(plane)
+        except Exception as e:
+            print(f"⚠️ Ошибка при загрузке самолета {p_dict.get('icao24')}: {e}")
+
+    print(f"\n📂 Загружено самолетов: {len(planes)}")
+    return planes
+
+
+def show_saved_planes():
+    """Показать сохраненные самолеты."""
+    storage = JSONStorage("data/aeroplanes.json")
+    planes_dict = storage.get_all()
+
+    if not planes_dict:
+        print("\n📂 Файл пуст")
+        return
+
+    print(f"\n📂 СОХРАНЕННЫЕ САМОЛЕТЫ (всего: {len(planes_dict)}):")
+
+    # Группировка по странам
+    by_country = {}
+    for p in planes_dict:
+        country = p.get('origin_country', 'Unknown')
+        if country not in by_country:
+            by_country[country] = []
+        by_country[country].append(p)
+
+    for country, planes_list in sorted(by_country.items()):
+        print(f"\n  🌍 {country}: {len(planes_list)}")
+        for i, p in enumerate(planes_list[:5], 1):  # Показываем первые 5 из каждой страны
+            callsign = p.get('callsign', 'Unknown')
+            altitude = p.get('altitude', '—')
+            speed = p.get('speed', '—')
+            if altitude != '—':
+                altitude = f"{altitude:.0f} м"
+            if speed != '—':
+                speed = f"{speed * 3.6:.0f} км/ч"
+            print(f"     {i}. {callsign}: {altitude}, {speed}")
+
+
+def clear_file():
+    """Очистка файла."""
+    storage = JSONStorage("data/aeroplanes.json")
+    count = len(storage)
+    storage.clear()
+    print(f"\n🗑️  Файл очищен. Удалено записей: {count}")
+
+
 def user_interaction():
     """Главная функция взаимодействия с пользователем."""
     print("=" * 60)
@@ -148,6 +244,7 @@ def user_interaction():
     print("  • Поиск по географическим координатам стран (OpenStreetMap)")
     print("  • Класс Aeroplane с валидацией и методами сравнения")
     print("  • Сортировка и фильтрация данных")
+    print("  • Сохранение и загрузка данных в JSON")
 
     # Создаем экземпляр API
     api = AeroplanesAPI()
@@ -155,9 +252,9 @@ def user_interaction():
 
     while True:
         print_menu()
-        choice = input("Ваш выбор (1-5): ")
+        choice = input("Ваш выбор (1-9): ")
 
-        if choice == "5":
+        if choice == "9":
             print("\n👋 До свидания!")
             break
 
@@ -172,6 +269,18 @@ def user_interaction():
 
         elif choice == "4":
             compare_two_planes(current_planes)
+
+        elif choice == "5":
+            save_to_file(current_planes)
+
+        elif choice == "6":
+            current_planes = load_from_file()
+
+        elif choice == "7":
+            show_saved_planes()
+
+        elif choice == "8":
+            clear_file()
 
         else:
             print("⚠️ Неверный выбор. Попробуйте снова.")
