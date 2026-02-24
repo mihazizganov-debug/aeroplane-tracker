@@ -19,7 +19,7 @@ class BaseStorage(ABC):
         pass
 
     @abstractmethod
-    def get(self, **criteria) -> List[Dict[str, Any]]:
+    def get(self, **criteria: Any) -> List[Dict[str, Any]]:
         """Получение элементов из хранилища по критериям."""
         pass
 
@@ -29,7 +29,7 @@ class BaseStorage(ABC):
         pass
 
     @abstractmethod
-    def delete(self, **criteria) -> int:
+    def delete(self, **criteria: Any) -> int:
         """Удаление элементов из хранилища по критериям."""
         pass
 

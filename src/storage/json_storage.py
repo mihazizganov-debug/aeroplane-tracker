@@ -2,7 +2,7 @@
 
 import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 from src.storage.base_storage import BaseStorage
 
@@ -27,20 +27,24 @@ class JSONStorage(BaseStorage):
 
         # Создаем файл с пустым списком, если его нет
         if not os.path.exists(self._filename):
-            with open(self._filename, 'w', encoding='utf-8') as f:
+            with open(self._filename, "w", encoding="utf-8") as f:
                 json.dump([], f, ensure_ascii=False, indent=2)
 
     def _load_data(self) -> List[Dict[str, Any]]:
         """Загрузка данных из JSON-файла."""
         try:
-            with open(self._filename, 'r', encoding='utf-8') as f:
-                return json.load(f)
+            with open(self._filename, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                # Явно приводим к нужному типу
+                if isinstance(data, list):
+                    return cast(List[Dict[str, Any]], data)
+                return []
         except (json.JSONDecodeError, FileNotFoundError):
             return []
 
     def _save_data(self) -> None:
         """Сохранение данных в JSON-файл."""
-        with open(self._filename, 'w', encoding='utf-8') as f:
+        with open(self._filename, "w", encoding="utf-8") as f:
             json.dump(self._data, f, ensure_ascii=False, indent=2)
 
     def add(self, item: Dict[str, Any]) -> None:
@@ -50,13 +54,13 @@ class JSONStorage(BaseStorage):
         """
         # Проверяем на дубликат по ICAO24
         for existing in self._data:
-            if existing.get('icao24') == item.get('icao24'):
+            if existing.get("icao24") == item.get("icao24"):
                 raise ValueError(f"Самолет с ICAO24 {item.get('icao24')} уже существует")
 
         self._data.append(item)
         self._save_data()
 
-    def add_many(self, items: List[Dict[str, Any]]) -> tuple[int, int]:
+    def add_many(self, items: List[Dict[str, Any]]) -> Tuple[int, int]:
         """Добавление нескольких элементов."""
         added = 0
         skipped = 0
@@ -70,7 +74,7 @@ class JSONStorage(BaseStorage):
 
         return added, skipped
 
-    def get(self, **criteria) -> List[Dict[str, Any]]:
+    def get(self, **criteria: Any) -> List[Dict[str, Any]]:
         """Получение элементов по критериям."""
         result = self._data
 
@@ -84,7 +88,7 @@ class JSONStorage(BaseStorage):
         """Получение всех элементов."""
         return self._data.copy()
 
-    def delete(self, **criteria) -> int:
+    def delete(self, **criteria: Any) -> int:
         """Удаление элементов по критериям."""
         initial_count = len(self._data)
 
@@ -92,8 +96,7 @@ class JSONStorage(BaseStorage):
             return 0
 
         self._data = [
-            item for item in self._data
-            if not all(item.get(k) == v for k, v in criteria.items() if v is not None)
+            item for item in self._data if not all(item.get(k) == v for k, v in criteria.items() if v is not None)
         ]
 
         deleted = initial_count - len(self._data)
@@ -110,7 +113,7 @@ class JSONStorage(BaseStorage):
     def get_by_icao24(self, icao24: str) -> Optional[Dict[str, Any]]:
         """Получение самолета по ICAO24."""
         for item in self._data:
-            if item.get('icao24') == icao24:
+            if item.get("icao24") == icao24:
                 return item
         return None
 
