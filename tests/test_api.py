@@ -1,13 +1,14 @@
 """Тесты для классов API."""
 
-import pytest
 from typing import Any
 from unittest.mock import Mock, patch
-from requests.exceptions import Timeout
-from requests.exceptions import ConnectionError as RequestsConnectionError
 
-from src.api.base_api import BaseAPI
+import pytest
+from requests.exceptions import ConnectionError as RequestsConnectionError
+from requests.exceptions import Timeout
+
 from src.api.aeroplanes_api import AeroplanesAPI
+from src.api.base_api import BaseAPI
 
 
 class TestBaseAPI:
@@ -29,6 +30,7 @@ class TestBaseAPI:
 
     def test_base_api_strip_trailing_slash(self) -> None:
         """Тест, что базовый URL обрезает слеш в конце."""
+
         class TestAPI(BaseAPI):
             def _connect(self, endpoint: str, params: Any = None) -> dict:
                 return {}

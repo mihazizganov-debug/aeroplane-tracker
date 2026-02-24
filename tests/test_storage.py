@@ -32,11 +32,14 @@ class TestJSONStorage:
 
         storage = JSONStorage("data/test.json")
 
+        assert storage is not None
+        assert storage._filename == "data/test.json"
+
         mock_makedirs.assert_called_once_with("data", exist_ok=True)
 
-        mock_file.assert_any_call("data/test.json", 'w', encoding='utf-8')
+        mock_file.assert_any_call("data/test.json", "w", encoding="utf-8")
 
-        mock_file.assert_any_call("data/test.json", 'r', encoding='utf-8')
+        mock_file.assert_any_call("data/test.json", "r", encoding="utf-8")
 
         assert mock_file.call_count >= 2
 
