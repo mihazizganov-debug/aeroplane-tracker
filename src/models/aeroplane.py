@@ -23,8 +23,14 @@ class Aeroplane:
     """
 
     __slots__ = (
-        '_icao24', '_callsign', '_origin_country', '_altitude',
-        '_speed', '_longitude', '_latitude', '_on_ground'
+        "_icao24",
+        "_callsign",
+        "_origin_country",
+        "_altitude",
+        "_speed",
+        "_longitude",
+        "_latitude",
+        "_on_ground",
     )
 
     def __init__(
@@ -36,7 +42,7 @@ class Aeroplane:
         speed: Optional[float],
         longitude: Optional[float] = None,
         latitude: Optional[float] = None,
-        on_ground: bool = False
+        on_ground: bool = False,
     ) -> None:
         """Инициализация объекта самолета.
 
@@ -59,7 +65,7 @@ class Aeroplane:
         self._altitude = self._validate_altitude(altitude)
         self._speed = self._validate_speed(speed)
         self._longitude = longitude  # без валидации
-        self._latitude = latitude    # без валидации
+        self._latitude = latitude  # без валидации
         self._on_ground = on_ground
 
     # ============ Приватные методы валидации ============
@@ -107,25 +113,25 @@ class Aeroplane:
 
     # ============ Методы сравнения (по высоте) ============
 
-    def __lt__(self, other: 'Aeroplane') -> bool:
+    def __lt__(self, other: "Aeroplane") -> bool:
         """Сравнение меньше (по высоте)."""
         if not isinstance(other, Aeroplane):
             return NotImplemented
         return (self._altitude or 0) < (other._altitude or 0)
 
-    def __le__(self, other: 'Aeroplane') -> bool:
+    def __le__(self, other: "Aeroplane") -> bool:
         """Сравнение меньше или равно (по высоте)."""
         if not isinstance(other, Aeroplane):
             return NotImplemented
         return (self._altitude or 0) <= (other._altitude or 0)
 
-    def __gt__(self, other: 'Aeroplane') -> bool:
+    def __gt__(self, other: "Aeroplane") -> bool:
         """Сравнение больше (по высоте)."""
         if not isinstance(other, Aeroplane):
             return NotImplemented
         return (self._altitude or 0) > (other._altitude or 0)
 
-    def __ge__(self, other: 'Aeroplane') -> bool:
+    def __ge__(self, other: "Aeroplane") -> bool:
         """Сравнение больше или равно (по высоте)."""
         if not isinstance(other, Aeroplane):
             return NotImplemented
@@ -134,7 +140,7 @@ class Aeroplane:
     def __eq__(self, other: object) -> bool:
         """Сравнение на равенство (по ICAO24)."""
         if not isinstance(other, Aeroplane):
-            return NotImplemented
+            return False
         return self._icao24 == other._icao24
 
     # ============ Геттеры ============
@@ -193,18 +199,18 @@ class Aeroplane:
             Dict[str, Any]: Словарь с данными самолета
         """
         return {
-            'icao24': self._icao24,
-            'callsign': self._callsign,
-            'origin_country': self._origin_country,
-            'altitude': self._altitude,
-            'speed': self._speed,
-            'longitude': self._longitude,
-            'latitude': self._latitude,
-            'on_ground': self._on_ground
+            "icao24": self._icao24,
+            "callsign": self._callsign,
+            "origin_country": self._origin_country,
+            "altitude": self._altitude,
+            "speed": self._speed,
+            "longitude": self._longitude,
+            "latitude": self._latitude,
+            "on_ground": self._on_ground,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Aeroplane':
+    def from_dict(cls, data: Dict[str, Any]) -> "Aeroplane":
         """Создание объекта из словаря.
 
         Args:
@@ -214,18 +220,18 @@ class Aeroplane:
             Aeroplane: Объект самолета
         """
         return cls(
-            icao24=data.get('icao24', ''),
-            callsign=data.get('callsign'),
-            origin_country=data.get('origin_country', ''),
-            altitude=data.get('altitude'),
-            speed=data.get('speed'),
-            longitude=data.get('longitude'),
-            latitude=data.get('latitude'),
-            on_ground=data.get('on_ground', False)
+            icao24=data.get("icao24", ""),
+            callsign=data.get("callsign"),
+            origin_country=data.get("origin_country", ""),
+            altitude=data.get("altitude"),
+            speed=data.get("speed"),
+            longitude=data.get("longitude"),
+            latitude=data.get("latitude"),
+            on_ground=data.get("on_ground", False),
         )
 
     @classmethod
-    def cast_to_object_list(cls, data: Dict[str, Any]) -> List['Aeroplane']:
+    def cast_to_object_list(cls, data: Dict[str, Any]) -> List["Aeroplane"]:
         """Преобразование JSON-ответа от API в список объектов самолетов.
 
         Args:
@@ -235,19 +241,22 @@ class Aeroplane:
             List[Aeroplane]: Список объектов самолетов
         """
         aeroplanes = []
-        states = data.get('states', [])
+        states = data.get("states", [])
 
         for state in states:
+            if len(state) < 10:
+                continue
+
             try:
                 aeroplane = cls(
-                    icao24=state[0] if len(state) > 0 else '',
+                    icao24=state[0] if len(state) > 0 else "",
                     callsign=state[1].strip() if len(state) > 1 and state[1] else None,
-                    origin_country=state[2] if len(state) > 2 and state[2] else 'Unknown',
+                    origin_country=state[2] if len(state) > 2 and state[2] else "Unknown",
                     altitude=float(state[7]) if len(state) > 7 and state[7] is not None else None,
                     speed=float(state[9]) if len(state) > 9 and state[9] is not None else None,
                     longitude=float(state[5]) if len(state) > 5 and state[5] is not None else None,
                     latitude=float(state[6]) if len(state) > 6 and state[6] is not None else None,
-                    on_ground=bool(state[8]) if len(state) > 8 and state[8] is not None else False
+                    on_ground=bool(state[8]) if len(state) > 8 and state[8] is not None else False,
                 )
                 aeroplanes.append(aeroplane)
             except (ValueError, TypeError, IndexError):
@@ -257,7 +266,7 @@ class Aeroplane:
 
     def __str__(self) -> str:
         """Строковое представление самолета."""
-        callsign = self._callsign or 'Unknown'
+        callsign = self._callsign or "Unknown"
         altitude = f"{self._altitude:.0f} м" if self._altitude is not None else "—"
         speed = f"{self.speed_kmh:.0f} км/ч" if self._speed is not None else "—"
         return f"{callsign} ({self._origin_country}): {altitude}, {speed}"
