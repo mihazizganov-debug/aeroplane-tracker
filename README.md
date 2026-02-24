@@ -41,7 +41,7 @@
 
 ## ⚙️ Установка и запуск
 
-```bash
+```
 # Клонирование
 git clone https://github.com/mhazizganov-debug/aeroplane-tracker.git
 cd aeroplane-tracker
@@ -82,7 +82,7 @@ AEROPLANE TRACKER - МЕНЮ
 Выберите 7 — статистика сохраненных
 
 🧪 Тестирование
-bash
+
 # Запуск всех тестов
 pytest tests/ -v
 
@@ -94,29 +94,29 @@ pytest --cov=src tests/ --cov-report=html  # папка htmlcov/
 📁 Структура проекта
 text
 aeroplane-tracker/
-├── data/                    # JSON-файлы с данными (игнорятся Git)
-├── htmlcov/                 # HTML отчет о покрытии
-├── src/                     # Исходный код
-│   ├── api/                 # Работа с API
-│   │   ├── base_api.py      # Абстрактный класс
-│   │   └── aeroplanes_api.py# Реализация OpenSky/Nominatim
-│   ├── models/              # Модели данных
-│   │   └── aeroplane.py     # Класс Aeroplane (__slots__)
-│   └── storage/             # Работа с файлами
-│       ├── base_storage.py  # Абстрактное хранилище
-│       └── json_storage.py  # JSON-хранилище
-├── tests/                   # Тесты (57 шт)
+├── data/                     # JSON-файлы с данными (игнорятся Git)
+├── htmlcov/                  # HTML отчет о покрытии
+├── src/                      # Исходный код
+│   ├── api/                  # Работа с API
+│   │   ├── base_api.py       # Абстрактный класс
+│   │   └── aeroplanes_api.py # Реализация OpenSky/Nominatim
+│   ├── models/               # Модели данных
+│   │   └── aeroplane.py      # Класс Aeroplane (__slots__)
+│   └── storage/              # Работа с файлами
+│       ├── base_storage.py   # Абстрактное хранилище
+│       └── json_storage.py   # JSON-хранилище
+├── tests/                    # Тесты (57 шт)
 │   ├── test_aeroplane.py
 │   ├── test_api.py
 │   └── test_storage.py
-├── .env.example             # Пример переменных
-├── .flake8                  # Конфиг flake8
+├── .env.example              # Пример переменных
+├── .flake8                   # Конфиг flake8
 ├── .gitignore
-├── LICENSE                  # MIT License
-├── main.py                  # Точка входа
+├── LICENSE                   # MIT License
+├── main.py                   # Точка входа
 ├── poetry.lock
 ├── pyproject.toml            # Зависимости
-└── README.md                # Документация
+└── README.md                 # Документация
 👨‍💻 Автор
 Михаил Зизганов
 GitHub: @mhazizganov-debug
