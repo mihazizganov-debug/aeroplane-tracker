@@ -3,12 +3,14 @@
 
 """Точка входа в программу. Демонстрация всех возможностей проекта."""
 
+from typing import Any, Dict, List
+
 from src.api.aeroplanes_api import AeroplanesAPI
 from src.models.aeroplane import Aeroplane
 from src.storage.json_storage import JSONStorage
 
 
-def print_menu():
+def print_menu() -> None:
     """Вывод меню."""
     print("\n" + "=" * 60)
     print("AEROPLANE TRACKER - МЕНЮ")
@@ -25,7 +27,7 @@ def print_menu():
     print("-" * 60)
 
 
-def search_by_country(api):
+def search_by_country(api: Any) -> List:
     """Поиск самолетов по стране."""
     country = input("\nВведите название страны (на английском): ")
 
@@ -40,7 +42,7 @@ def search_by_country(api):
 
         if planes:
             print(f"\n📊 Самолеты над {country}:")
-            for i, plane in enumerate(planes[:10], 1):  # Показываем первые 10
+            for i, plane in enumerate(planes[:10], 1):
                 print(f"  {i}. {plane}")
         else:
             print(f"❌ Над {country} нет самолетов в данный момент")
@@ -52,7 +54,7 @@ def search_by_country(api):
         return []
 
 
-def show_top_by_altitude(planes):
+def show_top_by_altitude(planes: List) -> None:
     """Показать топ N самолетов по высоте."""
     if not planes:
         print("\n⚠️ Сначала выполните поиск самолетов (пункт 1)")
@@ -74,7 +76,7 @@ def show_top_by_altitude(planes):
         print(f"⚠️ Ошибка: {e}")
 
 
-def filter_by_origin_country(planes):
+def filter_by_origin_country(planes: List) -> None:
     """Фильтр самолетов по стране регистрации."""
     if not planes:
         print("\n⚠️ Сначала выполните поиск самолетов (пункт 1)")
@@ -90,7 +92,7 @@ def filter_by_origin_country(planes):
             print(f"  {i}. {plane}")
 
 
-def compare_two_planes(planes):
+def compare_two_planes(planes: List) -> None:
     """Сравнение двух самолетов."""
     if not planes:
         print("\n⚠️ Сначала выполните поиск самолетов (пункт 1)")
@@ -143,7 +145,7 @@ def compare_two_planes(planes):
         print(f"⚠️ Ошибка: {e}")
 
 
-def save_to_file(planes):
+def save_to_file(planes: List) -> None:
     """Сохранение текущих самолетов в JSON-файл."""
     if not planes:
         print("\n⚠️ Нет самолетов для сохранения")
@@ -156,13 +158,13 @@ def save_to_file(planes):
 
     added, skipped = storage.add_many(planes_dict)
 
-    print(f"\n💾 Результат сохранения:")
+    print("\n💾 Результат сохранения:")  # ← ИСПРАВЛЕНО!
     print(f"   ✅ Добавлено: {added}")
     print(f"   ⏭️  Пропущено (дубликаты): {skipped}")
     print(f"   📊 Всего в файле: {len(storage)}")
 
 
-def load_from_file():
+def load_from_file() -> list:
     """Загрузка самолетов из JSON-файла."""
     storage = JSONStorage("data/aeroplanes.json")
 
@@ -177,14 +179,14 @@ def load_from_file():
     for p_dict in planes_dict:
         try:
             plane = Aeroplane(
-                icao24=p_dict.get('icao24', ''),
-                callsign=p_dict.get('callsign'),
-                origin_country=p_dict.get('origin_country', ''),
-                altitude=p_dict.get('altitude'),
-                speed=p_dict.get('speed'),
-                longitude=p_dict.get('longitude'),
-                latitude=p_dict.get('latitude'),
-                on_ground=p_dict.get('on_ground', False)
+                icao24=p_dict.get("icao24", ""),
+                callsign=p_dict.get("callsign"),
+                origin_country=p_dict.get("origin_country", ""),
+                altitude=p_dict.get("altitude"),
+                speed=p_dict.get("speed"),
+                longitude=p_dict.get("longitude"),
+                latitude=p_dict.get("latitude"),
+                on_ground=p_dict.get("on_ground", False),
             )
             planes.append(plane)
         except Exception as e:
@@ -194,7 +196,7 @@ def load_from_file():
     return planes
 
 
-def show_saved_planes():
+def show_saved_planes() -> None:
     """Показать сохраненные самолеты."""
     storage = JSONStorage("data/aeroplanes.json")
     planes_dict = storage.get_all()
@@ -206,27 +208,27 @@ def show_saved_planes():
     print(f"\n📂 СОХРАНЕННЫЕ САМОЛЕТЫ (всего: {len(planes_dict)}):")
 
     # Группировка по странам
-    by_country = {}
+    by_country: Dict = {}
     for p in planes_dict:
-        country = p.get('origin_country', 'Unknown')
+        country = p.get("origin_country", "Unknown")
         if country not in by_country:
             by_country[country] = []
         by_country[country].append(p)
 
     for country, planes_list in sorted(by_country.items()):
         print(f"\n  🌍 {country}: {len(planes_list)}")
-        for i, p in enumerate(planes_list[:5], 1):  # Показываем первые 5 из каждой страны
-            callsign = p.get('callsign', 'Unknown')
-            altitude = p.get('altitude', '—')
-            speed = p.get('speed', '—')
-            if altitude != '—':
+        for i, p in enumerate(planes_list[:5], 1):
+            callsign = p.get("callsign", "Unknown")
+            altitude = p.get("altitude", "—")
+            speed = p.get("speed", "—")
+            if altitude != "—":
                 altitude = f"{altitude:.0f} м"
-            if speed != '—':
+            if speed != "—":
                 speed = f"{speed * 3.6:.0f} км/ч"
             print(f"     {i}. {callsign}: {altitude}, {speed}")
 
 
-def clear_file():
+def clear_file() -> None:
     """Очистка файла."""
     storage = JSONStorage("data/aeroplanes.json")
     count = len(storage)
@@ -234,7 +236,7 @@ def clear_file():
     print(f"\n🗑️  Файл очищен. Удалено записей: {count}")
 
 
-def user_interaction():
+def user_interaction() -> None:
     """Главная функция взаимодействия с пользователем."""
     print("=" * 60)
     print("ДОБРО ПОЖАЛОВАТЬ В AEROPLANE TRACKER")
