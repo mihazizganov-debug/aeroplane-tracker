@@ -17,7 +17,7 @@ class BaseAPI(ABC):
 
     def __init__(self, base_url: str, timeout: int = 10) -> None:
         """Инициализация базового API класса."""
-        self._base_url = base_url.rstrip('/')
+        self._base_url = base_url.rstrip("/")
         self._timeout = timeout
 
     @abstractmethod
