@@ -102,9 +102,13 @@ aeroplane-tracker/
 │   │   └── aeroplanes_api.py # Реализация OpenSky/Nominatim
 │   ├── models/               # Модели данных
 │   │   └── aeroplane.py      # Класс Aeroplane (__slots__)
-│   └── storage/              # Работа с файлами
-│       ├── base_storage.py   # Абстрактное хранилище
-│       └── json_storage.py   # JSON-хранилище
+│   ├── storage/              # Работа с файлами
+│   │   ├── base_storage.py   # Абстрактное хранилище
+│   │   └── json_storage.py   # JSON-хранилище
+│   └── utils/                # Вспомогательные функции
+│       ├── __init__.py
+│       └── helpers.py        # Фильтрация, сортировка, форматирование
+│ 
 ├── tests/                    # Тесты (57 шт)
 │   ├── test_aeroplane.py
 │   ├── test_api.py
