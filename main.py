@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 from src.api.aeroplanes_api import AeroplanesAPI
 from src.models.aeroplane import Aeroplane
 from src.storage.json_storage import JSONStorage
+from src.utils.helpers import filter_by_country, sort_by_altitude, get_top_n
 
 
 def print_menu() -> None:
@@ -27,7 +28,7 @@ def print_menu() -> None:
     print("-" * 60)
 
 
-def search_by_country(api: Any) -> List:
+def search_by_country(api: Any) -> List[Aeroplane]:
     """Поиск самолетов по стране."""
     country = input("\nВведите название страны (на английском): ")
 
@@ -54,7 +55,7 @@ def search_by_country(api: Any) -> List:
         return []
 
 
-def show_top_by_altitude(planes: List) -> None:
+def show_top_by_altitude(planes: List[Aeroplane]) -> None:
     """Показать топ N самолетов по высоте."""
     if not planes:
         print("\n⚠️ Сначала выполните поиск самолетов (пункт 1)")
@@ -63,11 +64,11 @@ def show_top_by_altitude(planes: List) -> None:
     try:
         n = int(input("\nВведите количество самолетов для вывода в топ: "))
 
-        # Сортируем по высоте (от большей к меньшей)
-        sorted_planes = sorted(planes, reverse=True)
+        # Используем функции из helpers
+        sorted_planes = sort_by_altitude(planes)
 
         print(f"\n📊 ТОП-{min(n, len(sorted_planes))} самолетов по высоте:")
-        for i, plane in enumerate(sorted_planes[:n], 1):
+        for i, plane in enumerate(get_top_n(sorted_planes, n), 1):
             print(f"  {i}. {plane}")
 
     except ValueError:
@@ -76,7 +77,7 @@ def show_top_by_altitude(planes: List) -> None:
         print(f"⚠️ Ошибка: {e}")
 
 
-def filter_by_origin_country(planes: List) -> None:
+def filter_by_origin_country(planes: List[Aeroplane]) -> None:
     """Фильтр самолетов по стране регистрации."""
     if not planes:
         print("\n⚠️ Сначала выполните поиск самолетов (пункт 1)")
@@ -84,7 +85,8 @@ def filter_by_origin_country(planes: List) -> None:
 
     country = input("\nВведите страну регистрации для фильтрации: ")
 
-    filtered = [p for p in planes if country.lower() in p.origin_country.lower()]
+    # Используем функцию из helpers
+    filtered = filter_by_country(planes, country)
 
     print(f"\n✅ Найдено самолетов из {country}: {len(filtered)}")
     if filtered:
@@ -92,7 +94,7 @@ def filter_by_origin_country(planes: List) -> None:
             print(f"  {i}. {plane}")
 
 
-def compare_two_planes(planes: List) -> None:
+def compare_two_planes(planes: List[Aeroplane]) -> None:
     """Сравнение двух самолетов."""
     if not planes:
         print("\n⚠️ Сначала выполните поиск самолетов (пункт 1)")
@@ -145,7 +147,7 @@ def compare_two_planes(planes: List) -> None:
         print(f"⚠️ Ошибка: {e}")
 
 
-def save_to_file(planes: List) -> None:
+def save_to_file(planes: List[Aeroplane]) -> None:
     """Сохранение текущих самолетов в JSON-файл."""
     if not planes:
         print("\n⚠️ Нет самолетов для сохранения")
@@ -158,13 +160,13 @@ def save_to_file(planes: List) -> None:
 
     added, skipped = storage.add_many(planes_dict)
 
-    print("\n💾 Результат сохранения:")  # ← ИСПРАВЛЕНО!
+    print("\n💾 Результат сохранения:")
     print(f"   ✅ Добавлено: {added}")
     print(f"   ⏭️  Пропущено (дубликаты): {skipped}")
     print(f"   📊 Всего в файле: {len(storage)}")
 
 
-def load_from_file() -> list:
+def load_from_file() -> List[Aeroplane]:
     """Загрузка самолетов из JSON-файла."""
     storage = JSONStorage("data/aeroplanes.json")
 
@@ -174,20 +176,11 @@ def load_from_file() -> list:
         print("\n📂 Файл пуст")
         return []
 
-    # Преобразуем словари в объекты Aeroplane
+    # Используем from_dict вместо ручного создания (по совету наставника)
     planes = []
     for p_dict in planes_dict:
         try:
-            plane = Aeroplane(
-                icao24=p_dict.get("icao24", ""),
-                callsign=p_dict.get("callsign"),
-                origin_country=p_dict.get("origin_country", ""),
-                altitude=p_dict.get("altitude"),
-                speed=p_dict.get("speed"),
-                longitude=p_dict.get("longitude"),
-                latitude=p_dict.get("latitude"),
-                on_ground=p_dict.get("on_ground", False),
-            )
+            plane = Aeroplane.from_dict(p_dict)
             planes.append(plane)
         except Exception as e:
             print(f"⚠️ Ошибка при загрузке самолета {p_dict.get('icao24')}: {e}")
@@ -208,7 +201,7 @@ def show_saved_planes() -> None:
     print(f"\n📂 СОХРАНЕННЫЕ САМОЛЕТЫ (всего: {len(planes_dict)}):")
 
     # Группировка по странам
-    by_country: Dict = {}
+    by_country: Dict[str, List[Dict[str, Any]]] = {}
     for p in planes_dict:
         country = p.get("origin_country", "Unknown")
         if country not in by_country:
@@ -250,7 +243,7 @@ def user_interaction() -> None:
 
     # Создаем экземпляр API
     api = AeroplanesAPI()
-    current_planes = []
+    current_planes: List[Aeroplane] = []
 
     while True:
         print_menu()
